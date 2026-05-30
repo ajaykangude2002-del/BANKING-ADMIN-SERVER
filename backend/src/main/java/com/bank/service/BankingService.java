@@ -20,7 +20,6 @@ public class BankingService {
     @Autowired
     private UserRepository userRepository;
 
-    // --- ACCOUNT LOGIC ---
     public void addAccount(Account a) { accountRepository.save(a); }
     public List<Account> getAllAccounts() { return accountRepository.findAll(); }
     public Account getAccount(String accNo) { return accountRepository.findById(accNo).orElse(null); }
@@ -53,12 +52,9 @@ public class BankingService {
         accountRepository.deleteById(accNo);
     }
 
-    // --- USER AUTHENTICATION LOGIC (NOW PERMANENT) ---
     public boolean registerUser(String u, String p, String email, String phone) {
-        if (userRepository.existsById(u)) return false; // Username taken
-        
-        User newUser = new User(u, p, email, phone);
-        userRepository.save(newUser);
+        if (userRepository.existsById(u)) return false; 
+        userRepository.save(new User(u, p, email, phone));
         return true;
     }
 
@@ -68,12 +64,9 @@ public class BankingService {
         return user.getPassword().equals(p);
     }
 
-    // Secure Password Reset Logic
     public boolean resetPassword(String u, String email, String phone, String newPassword) {
         User user = userRepository.findById(u).orElse(null);
         if (user == null) return false;
-
-        // Verify Email and Phone match the database
         if (user.getEmail().equals(email) && user.getPhoneNumber().equals(phone)) {
             user.setPassword(newPassword);
             userRepository.save(user);

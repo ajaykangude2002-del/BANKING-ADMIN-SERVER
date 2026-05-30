@@ -39,18 +39,23 @@ public class BankingController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createAccount(@RequestBody AccountRequest req) {
-        // 1. Check if Account Number is missing or just blank spaces
-        if (req.accNo == null || req.accNo.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Error: Account Number cannot be empty!");
-        }
-        
-        // 2. Check if the Name is missing
-        if (req.name == null || req.name.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Error: Account Holder Name cannot be empty!");
-        }
+        if (req.accNo == null || req.accNo.trim().isEmpty()) return ResponseEntity.badRequest().body("Account Number is required");
+        if (req.firstName == null || req.firstName.trim().isEmpty()) return ResponseEntity.badRequest().body("First Name is required");
+        if (req.middleName == null || req.middleName.trim().isEmpty()) return ResponseEntity.badRequest().body("Middle Name is required");
+        if (req.lastName == null || req.lastName.trim().isEmpty()) return ResponseEntity.badRequest().body("Last Name is required");
+        if (req.dob == null || req.dob.trim().isEmpty()) return ResponseEntity.badRequest().body("Date of Birth is required");
+        if (req.phone == null || req.phone.trim().isEmpty()) return ResponseEntity.badRequest().body("Phone Number is required");
+        if (req.aadhar == null || req.aadhar.trim().isEmpty()) return ResponseEntity.badRequest().body("Aadhar Number is required");
+        if (req.pan == null || req.pan.trim().isEmpty()) return ResponseEntity.badRequest().body("PAN Number is required");
+        if (req.balance == null) return ResponseEntity.badRequest().body("Initial Balance is required");
+        if (req.type == null || req.type.trim().isEmpty()) return ResponseEntity.badRequest().body("Account Type is required");
 
         try {
-            bankingService.addAccount(new Account(req.accNo, req.name, req.balance, req.type));
+            bankingService.addAccount(new Account(
+                req.accNo, req.firstName, req.middleName, req.lastName, 
+                req.phone, req.aadhar, req.pan, req.dob, 
+                req.balance, req.type
+            ));
             return ResponseEntity.ok("Account Created Successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -81,8 +86,6 @@ public class BankingController {
         catch (Exception e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 
-    // --- AUTHENTICATION ENDPOINTS ---
-    
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
         if (bankingService.registerUser(req.username, req.password, req.email, req.phone)) {
@@ -93,9 +96,7 @@ public class BankingController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthRequest req) {
-        if (bankingService.validateUser(req.username, req.password)) {
-            return ResponseEntity.ok("SUCCESS");
-        }
+        if (bankingService.validateUser(req.username, req.password)) return ResponseEntity.ok("SUCCESS");
         return ResponseEntity.status(401).body("Invalid Credentials");
     }
 
@@ -104,21 +105,13 @@ public class BankingController {
         if (bankingService.resetPassword(req.username, req.email, req.phone, req.newPassword)) {
             return ResponseEntity.ok("Password reset successfully. You can now login!");
         }
-        return ResponseEntity.status(401).body("Verification failed. Invalid Username, Email, or Phone.");
+        return ResponseEntity.status(401).body("Verification failed.");
     }
 
-    // --- DTO CLASSES ---
-    public static class AccountRequest { public String accNo; public String name; public BigDecimal balance; public String type; }
+    public static class AccountRequest { public String accNo; public String firstName; public String middleName; public String lastName; public String phone; public String aadhar; public String pan; public String dob; public BigDecimal balance; public String type; }
     public static class TransactionRequest { public String accNo; public BigDecimal amount; }
     public static class TransferRequest { public String from; public String to; public BigDecimal amount; }
-    
     public static class AuthRequest { public String username; public String password; }
-    
-    public static class RegisterRequest { 
-        public String username; public String password; public String email; public String phone; 
-    }
-    
-    public static class ForgotPasswordRequest { 
-        public String username; public String email; public String phone; public String newPassword; 
-    }
+    public static class RegisterRequest { public String username; public String password; public String email; public String phone; }
+    public static class ForgotPasswordRequest { public String username; public String email; public String phone; public String newPassword; }
 }

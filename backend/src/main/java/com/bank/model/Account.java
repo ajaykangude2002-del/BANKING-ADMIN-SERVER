@@ -1,40 +1,63 @@
 package com.bank.model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity // <-- Tells Spring this is a Database Table
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+
+@Entity 
 public class Account {
     
-    @Id // <-- Tells Spring this is the Primary Key (Unique ID)
+    @Id 
     private String accountNumber;
     
-    private String accountHolder;
-    private BigDecimal balance;
-    private String type;
+    @Column(nullable = false) private String firstName;
+    @Column(nullable = false) private String middleName;
+    @Column(nullable = false) private String lastName;
+    @Column(nullable = false) private String phone;
+    @Column(nullable = false) private String aadharNumber;
+    @Column(nullable = false) private String panNumber;
+    @Column(nullable = false) private String dob; 
+    @Column(nullable = false) private BigDecimal balance;
+    @Column(nullable = false) private String type;
     
-    // <-- Tells Spring to create a separate database table just to store this history list!
     @ElementCollection(fetch = FetchType.EAGER) 
     private List<TransactionRecord> history = new ArrayList<>();
 
-    // REQUIRED BY JPA DATABASE: An empty constructor
     public Account() {} 
 
-    public Account(String a, String h, BigDecimal b, String t) {
-        this.accountNumber = a;
-        this.accountHolder = h;
-        this.balance = b;
-        this.type = t;
-        // Record the initial deposit
-        recordTransaction("OPENING_BALANCE", b, "Account Opened");
+    public Account(String accNo, String fName, String mName, String lName, 
+                   String phone, String aadhar, String pan, String dob, 
+                   BigDecimal balance, String type) {
+        this.accountNumber = accNo;
+        this.firstName = fName;
+        this.middleName = mName;
+        this.lastName = lName;
+        this.phone = phone;
+        this.aadharNumber = aadhar;
+        this.panNumber = pan;
+        this.dob = dob;
+        this.balance = balance;
+        this.type = type;
+        
+        recordTransaction("OPENING_BALANCE", balance, "Account Opened");
     }
 
     public String getAccountNumber() { return accountNumber; }
-    public String getAccountHolder() { return accountHolder; }
+    public String getFirstName() { return firstName; }
+    public String getMiddleName() { return middleName; }
+    public String getLastName() { return lastName; }
+    public String getPhone() { return phone; }
+    public String getAadharNumber() { return aadharNumber; }
+    public String getPanNumber() { return panNumber; }
+    public String getDob() { return dob; }
     public BigDecimal getBalance() { return balance; }
     public String getType() { return type; }
     public List<TransactionRecord> getHistory() { return history; }
@@ -56,23 +79,5 @@ public class Account {
     private void recordTransaction(String type, BigDecimal amount, String desc) {
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         this.history.add(new TransactionRecord(time, type, amount, desc));
-    }
-
-    @Embeddable // <-- Tells Spring that this custom object is safe to store in the database
-    public static class TransactionRecord {
-        public String date;
-        public String type;
-        public BigDecimal amount;
-        public String description;
-
-        // REQUIRED BY JPA DATABASE: An empty constructor
-        public TransactionRecord() {}
-
-        public TransactionRecord(String date, String type, BigDecimal amount, String description) {
-            this.date = date;
-            this.type = type;
-            this.amount = amount;
-            this.description = description;
-        }
     }
 }

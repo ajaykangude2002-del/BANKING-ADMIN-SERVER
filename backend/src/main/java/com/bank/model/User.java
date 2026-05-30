@@ -5,7 +5,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "bank_users") // 'user' is often a reserved word in SQL, so we name it bank_users
+@Table(name = "bank_users") 
 public class User {
     
     @Id
@@ -14,7 +14,7 @@ public class User {
     private String email;
     private String phoneNumber;
 
-    public User() {} // Required by JPA
+    public User() {} 
 
     public User(String username, String password, String email, String phoneNumber) {
         this.username = username;
